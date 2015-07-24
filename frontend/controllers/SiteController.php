@@ -67,6 +67,8 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
+        //print_r(Yii::$app->user->can('moderator'));die;
+        //print_r(Yii::$app->authManager->getRolesByUser(1));die;
         return $this->render('index');
     }
 

@@ -17,12 +17,14 @@ use yii\web\IdentityInterface;
  * @property string $email
  * @property string $auth_key
  * @property integer $status
+ * @property string $role
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
  */
 class User extends ActiveRecord implements IdentityInterface
 {
+    const ROLE_USER = 'user';
     const STATUS_DELETED = 0;
     const STATUS_ACTIVE = 10;
 
@@ -184,5 +186,19 @@ class User extends ActiveRecord implements IdentityInterface
     public function removePasswordResetToken()
     {
         $this->password_reset_token = null;
+    }
+
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+        // установка роли пользователя
+        $auth = Yii::$app->authManager;
+        $name = $this->role ? $this->role : self::ROLE_USER;
+        $role = $auth->getRole($name);
+
+        if (!$insert) {
+            $auth->revokeAll($this->id);
+        }
+        $auth->assign($role, $this->id);
     }
 }
